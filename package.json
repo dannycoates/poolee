@@ -1,0 +1,17 @@
+{
+    "name": "poolee",
+    "version": "0.1.0",
+    "description": "HTTP Pool",
+    "homepage": "http://github.com/dannycoates/poolee",
+    "author": "Danny Coates <dannycoates@gmail.com>",
+    "keywords": ["pool", "http", "retry", "health"],
+    "repository": {
+      "type": "git",
+      "url": "http://github.com/dannycoates/poolee.git"
+    },
+    "engines" : { "node": ">=0.6.0" },
+    "dependencies": {},
+    "devDependencies": {
+      "mocha": "*"
+    }
+}
