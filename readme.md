@@ -30,7 +30,7 @@ pool.request(
       return
     }
     if(response.statusCode === 201) {
-      console.log("put succeeded");
+      console.log("put succeeded")
     }
     else {
       console.log(response.statusCode)

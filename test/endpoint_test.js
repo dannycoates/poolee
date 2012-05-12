@@ -165,5 +165,28 @@ describe("Endpoint", function () {
 			})
 			s.listen(6969)
 		})
+
+		it("returns an error to the callback when pending > maxPending", function (done) {
+			var s = http.createServer(function (req, res) {
+				setTimeout(function () {
+					res.end("foo")
+				}, 100)
+			})
+			s.on('listening', function () {
+				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 200, resolution: 10, maxPending: 1})
+				e.request({path:'/foo', method: 'GET'}, null, noop)
+				debugger;
+				e.request({path:'/foo', method: 'GET'}, null, function (err, response, body) {
+					assert.equal(err.reason, 'full')
+				})
+
+				setTimeout(function () {
+					s.close()
+					assert.equal(Object.keys(e.requests).length, 0)
+					done()
+				}, 400)
+			})
+			s.listen(6969)
+		})
 	})
 })
