@@ -21,21 +21,21 @@ var pool = new Pool(http, servers, options)
 
 pool.request(
   { method: "PUT"
-	,	path: "/users/me"
+  , path: "/users/me"
   }
 , postData
 , function (error, response, body) {
-		if (error) {
-			console.error(error.message)
-			return
-		}
-  	if(response.statusCode === 201) {
-  		console.log("put succeeded");
-  	}
-  	else {
-  		console.log(response.statusCode)
-  		console.log(body)
-  	}
+    if (error) {
+      console.error(error.message)
+      return
+    }
+    if(response.statusCode === 201) {
+      console.log("put succeeded");
+    }
+    else {
+      console.log(response.statusCode)
+      console.log(body)
+    }
   }
 )
 
