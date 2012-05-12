@@ -1,10 +1,10 @@
 {
     "name": "poolee",
     "version": "0.1.0",
-    "description": "HTTP Pool",
+    "description": "HTTP pool and load balancer",
     "homepage": "http://github.com/dannycoates/poolee",
     "author": "Danny Coates <dannycoates@gmail.com>",
-    "keywords": ["pool", "http", "retry", "health"],
+    "keywords": ["pool", "http", "retry", "health", "load balancer"],
     "repository": {
       "type": "git",
       "url": "http://github.com/dannycoates/poolee.git"
