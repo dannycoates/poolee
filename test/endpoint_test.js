@@ -189,4 +189,27 @@ describe("Endpoint", function () {
 			s.listen(6969)
 		})
 	})
+
+	describe("setPending()", function () {
+
+		it("maintains the correct pending count when requestCount 'overflows'", function () {
+			var e = new Endpoint(http, '127.0.0.1', 6969)
+			e.successes = (Math.pow(2, 31) / 2) - 250
+			e.failures = (Math.pow(2, 31) / 2) - 250
+			e.requestCount = Math.pow(2, 31)
+			e.setPending()
+			assert.equal(e.pending, 500)
+			assert.equal(e.requestCount, 500)
+		})
+
+		it("maintains the correct pending count when requestCount 'overflows'", function () {
+			var e = new Endpoint(http, '127.0.0.1', 6969)
+			e.pending = 500
+			e.requestRate = 500
+			e.requestCount = Math.pow(2, 31)
+			e.requestsLastCheck = e.requestCount - 500
+			e.resetCounters()
+			assert.equal(e.requestCount - e.requestsLastCheck, e.requestRate)
+		})
+	})
 })

@@ -5,7 +5,8 @@ var inherits = require('util').inherits
 var noop = function () {}
 
 var http = {
-	request: function () {}
+	request: noop,
+	Agent: noop
 }
 
 function FakeEndpoint() {}
