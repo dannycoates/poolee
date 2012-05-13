@@ -188,6 +188,40 @@ describe("Endpoint", function () {
 			})
 			s.listen(6969)
 		})
+
+		it("sends Content-Length when data is a string", function (done) {
+			var s = http.createServer(function (req, res) {
+				assert.equal(req.headers["content-length"], 4)
+				res.end("foo")
+			})
+			s.on('listening', function () {
+				var e = new Endpoint(http, '127.0.0.1', 6969)
+				e.request({path:'/foo', method: 'PUT'}, "ƒoo", noop)
+
+				setTimeout(function () {
+					s.close()
+					done()
+				}, 10)
+			})
+			s.listen(6969)
+		})
+
+		it("sends Content-Length when data is a buffer", function (done) {
+			var s = http.createServer(function (req, res) {
+				assert.equal(req.headers["content-length"], 4)
+				res.end("foo")
+			})
+			s.on('listening', function () {
+				var e = new Endpoint(http, '127.0.0.1', 6969)
+				e.request({path:'/foo', method: 'PUT'}, new Buffer("ƒoo"), noop)
+
+				setTimeout(function () {
+					s.close()
+					done()
+				}, 10)
+			})
+			s.listen(6969)
+		})
 	})
 
 	describe("setPending()", function () {
