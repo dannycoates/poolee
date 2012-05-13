@@ -15,11 +15,11 @@ inherits(FakeEndpoint, EventEmitter)
 function FakeRequestSet() {}
 FakeRequestSet.request = function () {}
 
-function succeeding_request(pool, options, data, cb) {
+function succeeding_request(pool, options, cb) {
 	return cb(null, {}, "foo")
 }
 
-function failing_request(pool, options, data, cb) {
+function failing_request(pool, options, cb) {
 	return cb({
 		message: "crap",
 		reason: "ihateyou"
@@ -105,5 +105,83 @@ describe('Pool', function () {
 			pool.request({}, null, noop)
 		})
 
+		it("allows the data parameter to be optional", function (done) {
+			FakeRequestSet.request = succeeding_request
+			pool.request({}, function (e, r, b) {
+				assert.equal(b, "foo")
+				done()
+			})
+		})
+
+		it("allows the options parameter to be a path string", function (done) {
+			FakeRequestSet.request = function (pool, options, cb) {
+				assert.equal(options.path, "/foo")
+				return cb(null, {}, "foo")
+			}
+			pool.request("/foo", function (e, r, b) {
+				assert.equal(b, "foo")
+				done()
+			})
+		})
+
+		it("defaults method to GET", function (done) {
+			FakeRequestSet.request = function (pool, options, cb) {
+				assert.equal(options.method, "GET")
+				return cb(null, {}, "foo")
+			}
+			pool.request("/foo", function (e, r, b) {
+				assert.equal(b, "foo")
+				done()
+			})
+		})
+	})
+
+	describe("get()", function () {
+
+		it("is an alias to request()", function () {
+			assert.equal(pool.get, pool.request)
+		})
+	})
+
+	describe("put()", function () {
+
+		it("sets the options.method to PUT", function (done) {
+			FakeRequestSet.request = function (pool, options, cb) {
+				assert.equal(options.method, "PUT")
+				return cb(null, {}, "foo")
+			}
+			pool.put("/foo", "bar", function (e, r, b) {
+				assert.equal(b, "foo")
+				done()
+			})
+		})
+	})
+
+	describe("post()", function () {
+
+		it("sets the options.method to POST", function (done) {
+			FakeRequestSet.request = function (pool, options, cb) {
+				assert.equal(options.method, "POST")
+				return cb(null, {}, "foo")
+			}
+			pool.post("/foo", "bar", function (e, r, b) {
+				assert.equal(b, "foo")
+				done()
+			})
+		})
+	})
+
+	describe("del()", function () {
+
+		it("sets the options.method to DELETE", function (done) {
+			FakeRequestSet.request = function (pool, options, cb) {
+				assert.equal(options.method, "DELETE")
+				return cb(null, {}, "foo")
+			}
+			pool.del("/foo", function (e, r, b) {
+				assert.equal(b, "foo")
+				done()
+			})
+		})
 	})
 })

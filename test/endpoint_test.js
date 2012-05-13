@@ -30,7 +30,7 @@ describe("Endpoint", function () {
 			s.on('listening', function () {
 				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 200, resolution: 10})
 				var error
-				e.request({path:'/foo', method: 'GET'}, null, function (err, response, body) {
+				e.request({path:'/foo', method: 'GET'}, function (err, response, body) {
 					error = err
 				})
 				setTimeout(function () {
@@ -59,7 +59,7 @@ describe("Endpoint", function () {
 			s.on('listening', function () {
 				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 200, resolution: 10})
 				var error
-				e.request({path:'/foo', method: 'GET'}, null, function (err, response, body) {
+				e.request({path:'/foo', method: 'GET'}, function (err, response, body) {
 					error = err
 				})
 
@@ -84,7 +84,7 @@ describe("Endpoint", function () {
 				e.on('timeout', function () {
 					fin = true
 				})
-				e.request({path:'/foo', method: 'GET'}, null, noop)
+				e.request({path:'/foo', method: 'GET'}, noop)
 
 				setTimeout(function () {
 					s.close()
@@ -104,7 +104,7 @@ describe("Endpoint", function () {
 			s.on('listening', function () {
 				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 200, resolution: 10})
 				var error
-				e.request({path:'/foo', method: 'GET'}, null, function (err, response, body) {
+				e.request({path:'/foo', method: 'GET'}, function (err, response, body) {
 					error = err
 				})
 
@@ -129,7 +129,7 @@ describe("Endpoint", function () {
 			s.on('listening', function () {
 				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 200, resolution: 10})
 				var error
-				e.request({path:'/foo', method: 'GET'}, null, function (err, response, body) {
+				e.request({path:'/foo', method: 'GET'}, function (err, response, body) {
 					error = err
 				})
 
@@ -152,7 +152,7 @@ describe("Endpoint", function () {
 			s.on('listening', function () {
 				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 200, resolution: 10})
 				var error
-				e.request({path:'/foo', method: 'GET'}, null, function (err, response, body) {
+				e.request({path:'/foo', method: 'GET'}, function (err, response, body) {
 					error = err
 				})
 
@@ -174,9 +174,8 @@ describe("Endpoint", function () {
 			})
 			s.on('listening', function () {
 				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 200, resolution: 10, maxPending: 1})
-				e.request({path:'/foo', method: 'GET'}, null, noop)
-				debugger;
-				e.request({path:'/foo', method: 'GET'}, null, function (err, response, body) {
+				e.request({path:'/foo', method: 'GET'}, noop)
+				e.request({path:'/foo', method: 'GET'}, function (err, response, body) {
 					assert.equal(err.reason, 'full')
 				})
 
@@ -196,7 +195,7 @@ describe("Endpoint", function () {
 			})
 			s.on('listening', function () {
 				var e = new Endpoint(http, '127.0.0.1', 6969)
-				e.request({path:'/foo', method: 'PUT'}, "ƒoo", noop)
+				e.request({path:'/foo', method: 'PUT', data: "ƒoo"}, noop)
 
 				setTimeout(function () {
 					s.close()
@@ -213,7 +212,7 @@ describe("Endpoint", function () {
 			})
 			s.on('listening', function () {
 				var e = new Endpoint(http, '127.0.0.1', 6969)
-				e.request({path:'/foo', method: 'PUT'}, new Buffer("ƒoo"), noop)
+				e.request({path:'/foo', method: 'PUT', data: Buffer("ƒoo")}, noop)
 
 				setTimeout(function () {
 					s.close()

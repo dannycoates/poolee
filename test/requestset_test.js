@@ -5,25 +5,25 @@ var node = {
 	request: function () {}
 }
 
-function succeeding_request(options, data, cb) {
+function succeeding_request(options, cb) {
 	return cb(null, {}, "foo")
 }
 
-function failing_request(options, data, cb) {
+function failing_request(options, cb) {
 	return cb({
 		message: "crap",
 		reason: "ihateyou"
 	})
 }
 
-function hangup_request(options, data, cb) {
+function hangup_request(options, cb) {
 	return cb({
 		message: "hang up",
 		reason: "socket hang up"
 	})
 }
 
-function aborted_request(options, data, cb) {
+function aborted_request(options, cb) {
 	return cb({
 		message: "aborted",
 		reason: "aborted"
@@ -40,17 +40,17 @@ var pool = {
 describe("RequestSet", function () {
 
 	it("defaults attempt count to at least 2", function () {
-		var r = new RequestSet({nodes: [1]}, {}, null, null)
+		var r = new RequestSet({nodes: [1]}, {}, null)
 		assert.equal(r.attempts, 2)
 	})
 
 	it("defaults attempt count to at most 5", function () {
-		var r = new RequestSet({nodes: [1,2,3,4,5,6,7,8,9]}, {}, null, null)
+		var r = new RequestSet({nodes: [1,2,3,4,5,6,7,8,9]}, {}, null)
 		assert.equal(r.attempts, 5)
 	})
 
 	it("defaults attempt count to pool.nodes.length", function () {
-		var r = new RequestSet({nodes: [1,2,3,4]}, {}, null, null)
+		var r = new RequestSet({nodes: [1,2,3,4]}, {}, null)
 		assert.equal(r.attempts, 4)
 	})
 
@@ -58,7 +58,7 @@ describe("RequestSet", function () {
 
 		it("calls the callback on success", function (done) {
 			node.request = succeeding_request
-			RequestSet.request(pool, {}, null, function (err, res, body) {
+			RequestSet.request(pool, {}, function (err, res, body) {
 				assert.equal(err, null)
 				assert.equal(body, "foo")
 				done()
@@ -67,7 +67,7 @@ describe("RequestSet", function () {
 
 		it("calls the callback on error", function (done) {
 			node.request = failing_request
-			RequestSet.request(pool, {}, null, function (err, res, body) {
+			RequestSet.request(pool, {}, function (err, res, body) {
 				assert.equal(err.message, "crap")
 				done()
 			})
@@ -78,7 +78,7 @@ describe("RequestSet", function () {
 				get_node: function () {},
 				nodes: []
 			}
-			RequestSet.request(p, {}, null, function (err, res, body) {
+			RequestSet.request(p, {}, function (err, res, body) {
 				assert.equal(err.message, "no nodes")
 				done()
 			})
@@ -90,7 +90,7 @@ describe("RequestSet", function () {
 				get_node: function () { return this.nodes[this.i++]},
 				nodes: [{ request: hangup_request }, { request: succeeding_request }]
 			}
-			RequestSet.request(p, {}, null, function (err, res, body) {
+			RequestSet.request(p, {}, function (err, res, body) {
 				assert.equal(err, null)
 				assert.equal(body, "foo")
 				done()
@@ -103,7 +103,7 @@ describe("RequestSet", function () {
 				get_node: function () { return this.nodes[this.i++]},
 				nodes: [{ request: hangup_request }, { request: hangup_request }, { request: succeeding_request }]
 			}
-			RequestSet.request(p, {}, null, function (err, res, body) {
+			RequestSet.request(p, {}, function (err, res, body) {
 				assert.equal(err.reason, "socket hang up")
 				done()
 			})
@@ -115,7 +115,7 @@ describe("RequestSet", function () {
 				get_node: function () { return this.nodes[this.i++]},
 				nodes: [{ request: aborted_request }, { request: succeeding_request }]
 			}
-			RequestSet.request(p, {}, null, function (err, res, body) {
+			RequestSet.request(p, {}, function (err, res, body) {
 				assert.equal(err, null)
 				assert.equal(body, "foo")
 				done()
@@ -128,7 +128,7 @@ describe("RequestSet", function () {
 				get_node: function () { return this.nodes[this.i++]},
 				nodes: [{ request: aborted_request }, { request: aborted_request }, { request: succeeding_request }]
 			}
-			RequestSet.request(p, {}, null, function (err, res, body) {
+			RequestSet.request(p, {}, function (err, res, body) {
 				assert.equal(err.reason, "aborted")
 				done()
 			})
@@ -140,7 +140,7 @@ describe("RequestSet", function () {
 				get_node: function () { return this.nodes[this.i++]},
 				nodes: [{ request: failing_request }, { request: failing_request }, { request: aborted_request }]
 			}
-			RequestSet.request(p, {}, null, function (err, res, body) {
+			RequestSet.request(p, {}, function (err, res, body) {
 				assert.equal(err.reason, "aborted")
 				done()
 			})
@@ -152,7 +152,7 @@ describe("RequestSet", function () {
 				get_node: function () { return this.nodes[this.i++]},
 				nodes: [{ request: failing_request }, { request: failing_request }, { request: succeeding_request }, { request: failing_request }]
 			}
-			RequestSet.request(p, {}, null, function (err, res, body) {
+			RequestSet.request(p, {}, function (err, res, body) {
 				assert.equal(err, null)
 				assert.equal(body, "foo")
 				done()
