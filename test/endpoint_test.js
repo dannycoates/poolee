@@ -166,6 +166,29 @@ describe("Endpoint", function () {
 			s.listen(6969)
 		})
 
+		it("returns the whole body to the callback", function (done) {
+			var s = http.createServer(function (req, res) {
+				res.write("foo")
+				setTimeout(function () {
+					res.end("bar")
+				}, 10)
+			})
+			s.on('listening', function () {
+				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 200, resolution: 10})
+				var body
+				e.request({path:'/foo', method: 'GET'}, function (err, response, b) {
+					body = b
+				})
+
+				setTimeout(function () {
+					s.close()
+					assert.equal(body, "foobar")
+					done()
+				}, 400)
+			})
+			s.listen(6969)
+		})
+
 		it("returns an error to the callback when pending > maxPending", function (done) {
 			var s = http.createServer(function (req, res) {
 				setTimeout(function () {
