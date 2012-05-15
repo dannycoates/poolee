@@ -43,28 +43,28 @@ for (var i = 0; i < instances; i++) {
 }
 
 var pool = new Pool(http, nodes, {maxPending: 100 })
-// pool.on('timing', function (time, op) {
-// 	if (!op.success) {
-// 		console.error('\033[31m' + time + '\033[39m')
-// 	}
-// 	else {
-// 		console.error(time)
-// 	}
-// })
+pool.on('timing', function (time, op) {
+	if (!op.success) {
+		console.error('\033[31m' + time + '\033[39m')
+	}
+	else {
+		console.error(time)
+	}
+})
 var x = 0
 var start = Date.now()
 var r = 10000
 var a = r
-var delay = 1000 + Math.floor(Math.random() * 100)
+var delay = 0// + Math.floor(Math.random() * 10)
 
 function result(error, response, body) {
 		if (error) {
-			//console.error('\033[31m' + error.reason + '\033[39m')
+			console.error('\033[31m' + error.reason + '\033[39m')
 			r--
 		}
 		else {
 			x++
-			//console.error(x + " " + body)
+			//console.error(pool.nodes.map(function (n) { return n.requestRate }))
 		}
 		if (x === r) {
 			console.error(pool.nodes.map(function (n) { return n.requestCount }))
@@ -74,6 +74,9 @@ function result(error, response, body) {
 		}
 	}
 
-for (i = 0; i < r; i++) {
-	pool.get({ path: "/?delay=" + delay, attempts: 10, retryDelay: 50 }, result)
-}
+setInterval(function () {
+	for (var i = 0; i < 5; i++) {
+		pool.get({ path: "/?delay=" + delay, attempts: 10, retryDelay: 50 }, result)
+	}
+}, 1)
+

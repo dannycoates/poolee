@@ -5,30 +5,57 @@ var http = require('http')
 
 var noop = function () {}
 
-
 var Endpoint = require("../lib/endpoint")(inherits, EventEmitter)
 
 describe("Endpoint", function () {
 
-	it("starts health checks when a checkInterval is given", function (done) {
-		var e = new Endpoint(http, '127.0.0.1', 6969, { checkInterval: 100 })
+	it("starts health checks when a ping path is given", function (done) {
+		var e = new Endpoint(http, '127.0.0.1', 6969, { ping: '/ping', resolution: 10 })
 		setTimeout(function () {
-			assert(e.healthTid)
 			assert.equal(e.healthy, false)
+			clearInterval(e.timeoutInterval)
 			done()
-		}, 1000)
+		}, 30)
 	})
 
 	describe("request()", function () {
+
+		it("sends Content-Length when data is a string", function (done) {
+			var s = http.createServer(function (req, res) {
+				assert.equal(req.headers["content-length"], 4)
+				res.end("foo")
+				s.close()
+				done()
+			})
+			s.on('listening', function () {
+				var e = new Endpoint(http, '127.0.0.1', 6969)
+				e.request({path:'/foo', method: 'PUT', data: "ƒoo"}, noop)
+			})
+			s.listen(6969)
+		})
+
+		it("sends Content-Length when data is a buffer", function (done) {
+			var s = http.createServer(function (req, res) {
+				assert.equal(req.headers["content-length"], 4)
+				res.end("foo")
+				s.close()
+				done()
+			})
+			s.on('listening', function () {
+				var e = new Endpoint(http, '127.0.0.1', 6969)
+				e.request({path:'/foo', method: 'PUT', data: Buffer("ƒoo")}, noop)
+			})
+			s.listen(6969)
+		})
 
 		it("times out and returns an error when the server fails to respond in time", function (done) {
 			var s = http.createServer(function (req, res) {
 				setTimeout(function () {
 					res.end("foo")
-				}, 300)
+				}, 30)
 			})
 			s.on('listening', function () {
-				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 200, resolution: 10})
+				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 20, resolution: 10})
 				var error
 				e.request({path:'/foo', method: 'GET'}, function (err, response, body) {
 					error = err
@@ -37,7 +64,7 @@ describe("Endpoint", function () {
 					s.close()
 					assert.equal(error.reason, "socket hang up")
 					done()
-				}, 400)
+				}, 40)
 			})
 			s.listen(6969)
 		})
@@ -53,11 +80,11 @@ describe("Endpoint", function () {
 
 				setTimeout(function () {
 					res.write('bar')
-				}, 300)
+				}, 40)
 
 			})
 			s.on('listening', function () {
-				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 200, resolution: 10})
+				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 15, resolution: 10})
 				var error
 				e.request({path:'/foo', method: 'GET'}, function (err, response, body) {
 					error = err
@@ -67,7 +94,7 @@ describe("Endpoint", function () {
 					s.close()
 					assert.equal(error.reason, "aborted")
 					done()
-				}, 400)
+				}, 60)
 			})
 			s.listen(6969)
 		})
@@ -76,10 +103,10 @@ describe("Endpoint", function () {
 			var s = http.createServer(function (req, res) {
 				setTimeout(function () {
 					res.end("foo")
-				}, 300)
+				}, 30)
 			})
 			s.on('listening', function () {
-				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 200, resolution: 10})
+				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 20, resolution: 10})
 				var fin = false
 				e.on('timeout', function () {
 					fin = true
@@ -90,7 +117,7 @@ describe("Endpoint", function () {
 					s.close()
 					assert.equal(fin, true)
 					done()
-				}, 400)
+				}, 50)
 			})
 			s.listen(6969)
 		})
@@ -99,10 +126,10 @@ describe("Endpoint", function () {
 			var s = http.createServer(function (req, res) {
 				setTimeout(function () {
 					res.end("foo")
-				}, 300)
+				}, 30)
 			})
 			s.on('listening', function () {
-				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 200, resolution: 10})
+				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 20, resolution: 10})
 				var error
 				e.request({path:'/foo', method: 'GET'}, function (err, response, body) {
 					error = err
@@ -113,21 +140,21 @@ describe("Endpoint", function () {
 					assert.equal(error.reason, "socket hang up")
 					assert.equal(Object.keys(e.requests).length, 0)
 					done()
-				}, 400)
+				}, 50)
 			})
 			s.listen(6969)
 		})
 
 		it("removes the request from this.requests on aborted", function (done) {
 			var s = http.createServer(function (req, res) {
+				res.writeHead(200)
+				res.write('foo')
 				setTimeout(function () {
-					res.writeHead(200)
-					res.write('foo')
 					req.connection.destroy()
 				}, 10)
 			})
 			s.on('listening', function () {
-				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 200, resolution: 10})
+				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 20, resolution: 10})
 				var error
 				e.request({path:'/foo', method: 'GET'}, function (err, response, body) {
 					error = err
@@ -138,7 +165,7 @@ describe("Endpoint", function () {
 					assert.equal(error.reason, "aborted")
 					assert.equal(Object.keys(e.requests).length, 0)
 					done()
-				}, 400)
+				}, 50)
 			})
 			s.listen(6969)
 		})
@@ -150,7 +177,7 @@ describe("Endpoint", function () {
 				}, 10)
 			})
 			s.on('listening', function () {
-				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 200, resolution: 10})
+				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 20, resolution: 10})
 				var error
 				e.request({path:'/foo', method: 'GET'}, function (err, response, body) {
 					error = err
@@ -161,7 +188,7 @@ describe("Endpoint", function () {
 					assert.equal(error, null)
 					assert.equal(Object.keys(e.requests).length, 0)
 					done()
-				}, 400)
+				}, 50)
 			})
 			s.listen(6969)
 		})
@@ -174,7 +201,7 @@ describe("Endpoint", function () {
 				}, 10)
 			})
 			s.on('listening', function () {
-				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 200, resolution: 10})
+				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 20, resolution: 10})
 				var body
 				e.request({path:'/foo', method: 'GET'}, function (err, response, b) {
 					body = b
@@ -184,19 +211,17 @@ describe("Endpoint", function () {
 					s.close()
 					assert.equal(body, "foobar")
 					done()
-				}, 400)
+				}, 50)
 			})
 			s.listen(6969)
 		})
 
 		it("returns an error to the callback when pending > maxPending", function (done) {
 			var s = http.createServer(function (req, res) {
-				setTimeout(function () {
-					res.end("foo")
-				}, 100)
+				res.end("foo")
 			})
 			s.on('listening', function () {
-				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 200, resolution: 10, maxPending: 1})
+				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 20, resolution: 10, maxPending: 1})
 				e.request({path:'/foo', method: 'GET'}, noop)
 				e.request({path:'/foo', method: 'GET'}, function (err, response, body) {
 					assert.equal(err.reason, 'full')
@@ -206,41 +231,7 @@ describe("Endpoint", function () {
 					s.close()
 					assert.equal(Object.keys(e.requests).length, 0)
 					done()
-				}, 400)
-			})
-			s.listen(6969)
-		})
-
-		it("sends Content-Length when data is a string", function (done) {
-			var s = http.createServer(function (req, res) {
-				assert.equal(req.headers["content-length"], 4)
-				res.end("foo")
-			})
-			s.on('listening', function () {
-				var e = new Endpoint(http, '127.0.0.1', 6969)
-				e.request({path:'/foo', method: 'PUT', data: "ƒoo"}, noop)
-
-				setTimeout(function () {
-					s.close()
-					done()
-				}, 10)
-			})
-			s.listen(6969)
-		})
-
-		it("sends Content-Length when data is a buffer", function (done) {
-			var s = http.createServer(function (req, res) {
-				assert.equal(req.headers["content-length"], 4)
-				res.end("foo")
-			})
-			s.on('listening', function () {
-				var e = new Endpoint(http, '127.0.0.1', 6969)
-				e.request({path:'/foo', method: 'PUT', data: Buffer("ƒoo")}, noop)
-
-				setTimeout(function () {
-					s.close()
-					done()
-				}, 10)
+				}, 50)
 			})
 			s.listen(6969)
 		})
@@ -258,7 +249,7 @@ describe("Endpoint", function () {
 			assert.equal(e.requestCount, 500)
 		})
 
-		it("maintains the correct pending count when requestCount 'overflows'", function () {
+		it("maintains the correct requestRate when requestCount 'overflows'", function () {
 			var e = new Endpoint(http, '127.0.0.1', 6969)
 			e.pending = 500
 			e.requestRate = 500
