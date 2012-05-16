@@ -222,16 +222,28 @@ describe("Endpoint", function () {
 			})
 			s.on('listening', function () {
 				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 20, resolution: 10, maxPending: 1})
-				e.request({path:'/foo', method: 'GET'}, noop)
-				e.request({path:'/foo', method: 'GET'}, function (err, response, body) {
+				e.request({path:'/foo1', method: 'GET'}, noop)
+				e.request({path:'/foo2', method: 'GET'}, function (err, response, body) {
 					assert.equal(err.reason, 'full')
-				})
-
-				setTimeout(function () {
 					s.close()
-					assert.equal(Object.keys(e.requests).length, 0)
 					done()
-				}, 50)
+				})
+			})
+			s.listen(6969)
+		})
+
+		it("allows ping requests when pending > maxPending", function (done) {
+			var s = http.createServer(function (req, res) {
+				res.end("foo")
+			})
+			s.on('listening', function () {
+				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 20, resolution: 10, maxPending: 1, ping: "/ping"})
+				e.request({path:'/ping', method: 'GET'}, noop)
+				e.request({path:'/ping', method: 'GET'}, function (err, response, body) {
+					assert.equal(response.statusCode, 200)
+					s.close()
+					done()
+				})
 			})
 			s.listen(6969)
 		})
@@ -257,6 +269,34 @@ describe("Endpoint", function () {
 			e.requestsLastCheck = e.requestCount - 500
 			e.resetCounters()
 			assert.equal(e.requestCount - e.requestsLastCheck, e.requestRate)
+		})
+	})
+
+	describe("setHealthy()", function () {
+
+		it("calls ping if transitioning from healthy to unhealthy", function (done) {
+			var e = new Endpoint(http, '127.0.0.1', 6969)
+			e.ping = done
+			e.setHealthy(false)
+		})
+
+		it("emits 'health' once when changing state from healthy to unhealthy", function (done) {
+			var e = new Endpoint(http, '127.0.0.1', 6969)
+			e.emit = function (name) {
+				assert.equal(name, "health")
+				done()
+			}
+			e.setHealthy(false)
+		})
+
+		it("emits 'health' once when changing state from unhealthy to healthy", function (done) {
+			var e = new Endpoint(http, '127.0.0.1', 6969)
+			e.emit = function (name) {
+				assert.equal(name, "health")
+				done()
+			}
+			e.healthy = false
+			e.setHealthy(true)
 		})
 	})
 })
