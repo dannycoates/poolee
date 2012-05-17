@@ -9,14 +9,14 @@ var Endpoint = require("../lib/endpoint")(inherits, EventEmitter)
 
 describe("Endpoint", function () {
 
-	it("starts health checks when a ping path is given", function (done) {
-		var e = new Endpoint(http, '127.0.0.1', 6969, { ping: '/ping', resolution: 10 })
-		setTimeout(function () {
-			assert.equal(e.healthy, false)
-			clearInterval(e.timeoutInterval)
-			done()
-		}, 30)
-	})
+	// it("starts health checks when a ping path is given", function (done) {
+	// 	var e = new Endpoint(http, '127.0.0.1', 6969, { ping: '/ping', resolution: 10 })
+	// 	setTimeout(function () {
+	// 		assert.equal(e.healthy, false)
+	// 		clearInterval(e.timeoutInterval)
+	// 		done()
+	// 	}, 30)
+	// })
 
 	describe("request()", function () {
 

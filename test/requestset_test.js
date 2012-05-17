@@ -34,6 +34,7 @@ var pool = {
 	get_node: function () {
 		return node
 	},
+	onRetry: function () {},
 	nodes: [node, node, node]
 }
 
@@ -88,6 +89,7 @@ describe("RequestSet", function () {
 			var p = {
 				i: 0,
 				get_node: function () { return this.nodes[this.i++]},
+				onRetry: function () {},
 				nodes: [{ request: hangup_request }, { request: succeeding_request }]
 			}
 			RequestSet.request(p, {}, function (err, res, body) {
@@ -101,6 +103,7 @@ describe("RequestSet", function () {
 			var p = {
 				i: 0,
 				get_node: function () { return this.nodes[this.i++]},
+				onRetry: function () {},
 				nodes: [{ request: hangup_request }, { request: hangup_request }, { request: succeeding_request }]
 			}
 			RequestSet.request(p, {}, function (err, res, body) {
@@ -113,6 +116,7 @@ describe("RequestSet", function () {
 			var p = {
 				i: 0,
 				get_node: function () { return this.nodes[this.i++]},
+				onRetry: function () {},
 				nodes: [{ request: aborted_request }, { request: succeeding_request }]
 			}
 			RequestSet.request(p, {}, function (err, res, body) {
@@ -126,6 +130,7 @@ describe("RequestSet", function () {
 			var p = {
 				i: 0,
 				get_node: function () { return this.nodes[this.i++]},
+				onRetry: function () {},
 				nodes: [{ request: aborted_request }, { request: aborted_request }, { request: succeeding_request }]
 			}
 			RequestSet.request(p, {}, function (err, res, body) {
@@ -138,6 +143,7 @@ describe("RequestSet", function () {
 			var p = {
 				i: 0,
 				get_node: function () { return this.nodes[this.i++]},
+				onRetry: function () {},
 				nodes: [{ request: failing_request }, { request: failing_request }, { request: aborted_request }]
 			}
 			RequestSet.request(p, {}, function (err, res, body) {
@@ -150,6 +156,7 @@ describe("RequestSet", function () {
 			var p = {
 				i: 0,
 				get_node: function () { return this.nodes[this.i++]},
+				onRetry: function () {},
 				nodes: [{ request: failing_request }, { request: failing_request }, { request: succeeding_request }, { request: failing_request }]
 			}
 			RequestSet.request(p, {}, function (err, res, body) {
