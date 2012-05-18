@@ -47,15 +47,15 @@ pool.on('timing', function (time, op) {
 	if (!op.success) {
 		console.error('\033[31m' + time + '\033[39m')
 	}
-	else {
-		console.error(time)
-	}
+	// else {
+	// 	console.error(time)
+	// }
 })
 var x = 0
 var start = Date.now()
 var r = 10000
 var a = r
-var delay = 0// + Math.floor(Math.random() * 10)
+var delay = 0 + Math.floor(Math.random() * 10)
 
 function result(error, response, body) {
 		if (error) {
@@ -66,11 +66,11 @@ function result(error, response, body) {
 			x++
 			//console.error(pool.nodes.map(function (n) { return n.requestRate }))
 		}
-		if (x === r) {
-			console.error(pool.nodes.map(function (n) { return n.requestCount }))
+		if (x % 1000 === 0) {//if (x === r) {
+			console.error(pool.nodes.map(function (n) { return n.requestRate }))
 			console.error((a - r) + " failed")
 			console.error(Date.now() - start)
-			children.forEach(function (c) { c.kill() })
+			//children.forEach(function (c) { c.kill() })
 		}
 	}
 
