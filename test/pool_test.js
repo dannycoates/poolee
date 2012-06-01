@@ -59,6 +59,11 @@ describe('Pool', function () {
 		)
 	})
 
+	//
+	// healthy_nodes
+	//
+	//////////////////////////////////////////////////////////////////////////////
+
 	describe("healthy_nodes()", function () {
 
 		it("filters out unhealthy nodes from the result", function () {
@@ -68,6 +73,11 @@ describe('Pool', function () {
 			}))
 		})
 	})
+
+	//
+	// request
+	//
+	//////////////////////////////////////////////////////////////////////////////
 
 	describe("request()", function () {
 
@@ -134,7 +144,32 @@ describe('Pool', function () {
 				done()
 			})
 		})
+
+		it("defaults options.stream to true when callback.length is 2", function (done) {
+			FakeRequestSet.request = function (pool, options, cb) {
+				assert.equal(options.stream, true)
+				return cb(null, {})
+			}
+			pool.request("/foo", function (e, r) {
+				done()
+			})
+		})
+
+		it("defaults options.stream to false when callback.length is 3", function (done) {
+			FakeRequestSet.request = function (pool, options, cb) {
+				assert.equal(options.stream, false)
+				return cb(null, {})
+			}
+			pool.request("/foo", function (e, r, b) {
+				done()
+			})
+		})
 	})
+
+	//
+	// get
+	//
+	//////////////////////////////////////////////////////////////////////////////
 
 	describe("get()", function () {
 
@@ -142,6 +177,11 @@ describe('Pool', function () {
 			assert.equal(pool.get, pool.request)
 		})
 	})
+
+	//
+	// put
+	//
+	//////////////////////////////////////////////////////////////////////////////
 
 	describe("put()", function () {
 
@@ -157,6 +197,11 @@ describe('Pool', function () {
 		})
 	})
 
+	//
+	// post
+	//
+	//////////////////////////////////////////////////////////////////////////////
+
 	describe("post()", function () {
 
 		it("sets the options.method to POST", function (done) {
@@ -170,6 +215,11 @@ describe('Pool', function () {
 			})
 		})
 	})
+
+	//
+	// del
+	//
+	//////////////////////////////////////////////////////////////////////////////
 
 	describe("del()", function () {
 

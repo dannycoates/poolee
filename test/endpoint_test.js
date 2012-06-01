@@ -9,14 +9,10 @@ var Endpoint = require("../lib/endpoint")(inherits, EventEmitter)
 
 describe("Endpoint", function () {
 
-	// it("starts health checks when a ping path is given", function (done) {
-	// 	var e = new Endpoint(http, '127.0.0.1', 6969, { ping: '/ping', resolution: 10 })
-	// 	setTimeout(function () {
-	// 		assert.equal(e.healthy, false)
-	// 		clearInterval(e.timeoutInterval)
-	// 		done()
-	// 	}, 30)
-	// })
+	//
+	// request
+	//
+	//////////////////////////////////////////////////////////////////////////////
 
 	describe("request()", function () {
 
@@ -247,7 +243,61 @@ describe("Endpoint", function () {
 			})
 			s.listen(6969)
 		})
+
+		it("buffers the response when callback has 3 arguments and options.stream is not true", function (done) {
+			var s = http.createServer(function (req, res) {
+				res.end("foo")
+			})
+			s.on('listening', function () {
+				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 20, resolution: 10, maxPending: 1})
+				e.request({path:'/ping', method: 'GET'}, function (err, response, body) {
+					assert.equal(response.statusCode, 200)
+					assert.equal(response.complete, true)
+					s.close()
+					done()
+				})
+			})
+			s.listen(6969)
+		})
+
+		it("streams the response when callback has 2 arguments", function (done) {
+			var s = http.createServer(function (req, res) {
+				res.end("foo")
+			})
+			s.on('listening', function () {
+				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 20, resolution: 10, maxPending: 1})
+				e.request({path:'/ping', method: 'GET'}, function (err, response) {
+					assert.equal(response.statusCode, 200)
+					assert.equal(response.complete, false)
+					s.close()
+					done()
+				})
+			})
+			s.listen(6969)
+		})
+
+		it("streams the response when options.stream is true", function (done) {
+			var s = http.createServer(function (req, res) {
+				res.end("foo")
+			})
+			s.on('listening', function () {
+				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 20, resolution: 10, maxPending: 1})
+				e.request({path:'/ping', method: 'GET', stream: true}, function (err, response, body) {
+					assert.equal(response.statusCode, 200)
+					assert.equal(response.complete, false)
+					assert.equal(body, undefined)
+					s.close()
+					done()
+				})
+			})
+			s.listen(6969)
+		})
 	})
+
+	//
+	// setPending
+	//
+	//////////////////////////////////////////////////////////////////////////////
 
 	describe("setPending()", function () {
 
@@ -271,6 +321,11 @@ describe("Endpoint", function () {
 			assert.equal(e.requestCount - e.requestsLastCheck, e.requestRate)
 		})
 	})
+
+	//
+	// setHealthy
+	//
+	//////////////////////////////////////////////////////////////////////////////
 
 	describe("setHealthy()", function () {
 
