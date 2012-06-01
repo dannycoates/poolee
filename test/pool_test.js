@@ -11,6 +11,9 @@ var http = {
 
 function FakeEndpoint() {}
 inherits(FakeEndpoint, EventEmitter)
+FakeEndpoint.prototype.busyness = function () { return 1 }
+var overloaded = new FakeEndpoint()
+FakeEndpoint.overloaded = function () { return overloaded }
 
 function FakeRequestSet() {}
 FakeRequestSet.request = function () {}
@@ -71,6 +74,20 @@ describe('Pool', function () {
 			assert.equal(true, pool.healthy_nodes().every(function (n) {
 				return n.healthy
 			}))
+		})
+	})
+
+	//
+	// get_node
+	//
+	//////////////////////////////////////////////////////////////////////////////
+
+	describe("get_node()", function () {
+
+		it("returns the 'overloaded' endpoint when totalPending > maxPending", function () {
+			var p = new Pool(http, ['127.0.0.1:8080', '127.0.0.1:8081', '127.0.0.1:8082'], { maxPending: 30 })
+			p.nodes.forEach(function (n) { n.pending = 10 })
+			assert.equal(p.get_node(), overloaded)
 		})
 	})
 

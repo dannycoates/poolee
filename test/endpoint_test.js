@@ -212,38 +212,6 @@ describe("Endpoint", function () {
 			s.listen(6969)
 		})
 
-		it("returns an error to the callback when pending > maxPending", function (done) {
-			var s = http.createServer(function (req, res) {
-				res.end("foo")
-			})
-			s.on('listening', function () {
-				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 20, resolution: 10, maxPending: 1})
-				e.request({path:'/foo1', method: 'GET'}, noop)
-				e.request({path:'/foo2', method: 'GET'}, function (err, response, body) {
-					assert.equal(err.reason, 'full')
-					s.close()
-					done()
-				})
-			})
-			s.listen(6969)
-		})
-
-		it("allows ping requests when pending > maxPending", function (done) {
-			var s = http.createServer(function (req, res) {
-				res.end("foo")
-			})
-			s.on('listening', function () {
-				var e = new Endpoint(http, '127.0.0.1', 6969, {timeout: 20, resolution: 10, maxPending: 1, ping: "/ping"})
-				e.request({path:'/ping', method: 'GET'}, noop)
-				e.request({path:'/ping', method: 'GET'}, function (err, response, body) {
-					assert.equal(response.statusCode, 200)
-					s.close()
-					done()
-				})
-			})
-			s.listen(6969)
-		})
-
 		it("buffers the response when callback has 3 arguments and options.stream is not true", function (done) {
 			var s = http.createServer(function (req, res) {
 				res.end("foo")
