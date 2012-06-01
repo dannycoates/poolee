@@ -2,6 +2,7 @@ var assert = require("assert")
 var EventEmitter = require("events").EventEmitter
 var inherits = require('util').inherits
 var http = require('http')
+var Stream = require('stream')
 
 var noop = function () {}
 
@@ -67,6 +68,30 @@ describe("Endpoint", function () {
 			s.on('listening', function () {
 				var e = new Endpoint(http, '127.0.0.1', 6969)
 				e.request({path:'/foo', method: 'PUT', data: Buffer("ƒoo")}, noop)
+			})
+			s.listen(6969)
+		})
+
+		it("pipes data to the request when it is a Stream", function (done) {
+			var put = "ƒoo"
+			var putStream = new Stream()
+			var s = http.createServer(function (req, res) {
+				var d = ''
+				req.on('data', function (data) { d += data })
+				req.on('end', function () {
+					assert.equal(d, put)
+					s.close()
+					done()
+				})
+			})
+
+			s.on('listening', function () {
+				var e = new Endpoint(http, '127.0.0.1', 6969)
+				e.request({path:'/foo', method: 'PUT', data: putStream}, noop)
+				putStream.emit('data','ƒ')
+				putStream.emit('data','o')
+				putStream.emit('data','o')
+				putStream.emit('end')
 			})
 			s.listen(6969)
 		})

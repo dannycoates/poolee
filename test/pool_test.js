@@ -64,6 +64,11 @@ describe('Pool', function () {
 		)
 	})
 
+	it("sets this.length to this.nodes.length", function () {
+		var p = new Pool(http, ['127.0.0.1:8080', '127.0.0.1:8081', '127.0.0.1:8082'])
+		assert.equal(p.length, 3)
+	})
+
 	//
 	// healthy_nodes
 	//

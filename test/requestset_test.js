@@ -39,23 +39,23 @@ var pool = {
 		return node
 	},
 	onRetry: function () {},
-	nodes: [node, node, node]
+	length: 3
 }
 
 describe("RequestSet", function () {
 
 	it("defaults attempt count to at least 2", function () {
-		var r = new RequestSet({nodes: [1]}, {}, null)
+		var r = new RequestSet({length: 1}, {}, null)
 		assert.equal(r.attempts, 2)
 	})
 
 	it("defaults attempt count to at most 5", function () {
-		var r = new RequestSet({nodes: [1,2,3,4,5,6,7,8,9]}, {}, null)
+		var r = new RequestSet({length: 9}, {}, null)
 		assert.equal(r.attempts, 5)
 	})
 
-	it("defaults attempt count to pool.nodes.length", function () {
-		var r = new RequestSet({nodes: [1,2,3,4]}, {}, null)
+	it("defaults attempt count to pool.length", function () {
+		var r = new RequestSet({length: 4}, {}, null)
 		assert.equal(r.attempts, 4)
 	})
 
@@ -81,7 +81,7 @@ describe("RequestSet", function () {
 		it("calls the callback with a 'no nodes' error when there's no nodes to service the request", function (done) {
 			var p = {
 				get_node: function () { return unhealthy },
-				nodes: [],
+				length: 0,
 				onRetry: function () {}
 			}
 			RequestSet.request(p, {}, function (err, res, body) {
@@ -95,6 +95,7 @@ describe("RequestSet", function () {
 				i: 0,
 				get_node: function () { return this.nodes[this.i++]},
 				onRetry: function () {},
+				length: 2,
 				nodes: [{ request: hangup_request }, { request: succeeding_request }]
 			}
 			RequestSet.request(p, {}, function (err, res, body) {
@@ -109,6 +110,7 @@ describe("RequestSet", function () {
 				i: 0,
 				get_node: function () { return this.nodes[this.i++]},
 				onRetry: function () {},
+				length: 3,
 				nodes: [{ request: hangup_request }, { request: hangup_request }, { request: succeeding_request }]
 			}
 			RequestSet.request(p, {}, function (err, res, body) {
@@ -122,6 +124,7 @@ describe("RequestSet", function () {
 				i: 0,
 				get_node: function () { return this.nodes[this.i++]},
 				onRetry: function () {},
+				length: 2,
 				nodes: [{ request: aborted_request }, { request: succeeding_request }]
 			}
 			RequestSet.request(p, {}, function (err, res, body) {
@@ -136,6 +139,7 @@ describe("RequestSet", function () {
 				i: 0,
 				get_node: function () { return this.nodes[this.i++]},
 				onRetry: function () {},
+				length: 3,
 				nodes: [{ request: aborted_request }, { request: aborted_request }, { request: succeeding_request }]
 			}
 			RequestSet.request(p, {}, function (err, res, body) {
@@ -149,6 +153,7 @@ describe("RequestSet", function () {
 				i: 0,
 				get_node: function () { return this.nodes[this.i++]},
 				onRetry: function () {},
+				length: 3,
 				nodes: [{ request: failing_request }, { request: failing_request }, { request: aborted_request }]
 			}
 			RequestSet.request(p, {}, function (err, res, body) {
@@ -162,6 +167,7 @@ describe("RequestSet", function () {
 				i: 0,
 				get_node: function () { return this.nodes[this.i++]},
 				onRetry: function () {},
+				length: 4,
 				nodes: [{ request: failing_request }, { request: failing_request }, { request: succeeding_request }, { request: failing_request }]
 			}
 			RequestSet.request(p, {}, function (err, res, body) {
