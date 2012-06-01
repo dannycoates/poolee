@@ -14,6 +14,8 @@ inherits(FakeEndpoint, EventEmitter)
 FakeEndpoint.prototype.busyness = function () { return 1 }
 var overloaded = new FakeEndpoint()
 FakeEndpoint.overloaded = function () { return overloaded }
+var unhealthy = new FakeEndpoint()
+FakeEndpoint.unhealthy = function () { return unhealthy }
 
 function FakeRequestSet() {}
 FakeRequestSet.request = function () {}
@@ -88,6 +90,12 @@ describe('Pool', function () {
 			var p = new Pool(http, ['127.0.0.1:8080', '127.0.0.1:8081', '127.0.0.1:8082'], { maxPending: 30 })
 			p.nodes.forEach(function (n) { n.pending = 10 })
 			assert.equal(p.get_node(), overloaded)
+		})
+
+		it("returns the 'unhealthy' endpoint when no nodes are healthy", function () {
+			var p = new Pool(http, ['127.0.0.1:8080', '127.0.0.1:8081', '127.0.0.1:8082'])
+			p.nodes.forEach(function (n) { n.healthy = false })
+			assert.equal(p.get_node(), unhealthy)
 		})
 	})
 

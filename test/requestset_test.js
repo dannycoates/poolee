@@ -5,6 +5,10 @@ var node = {
 	request: function () {}
 }
 
+var unhealthy = {
+	request: function (options, callback) { callback({ message: 'no nodes'}) }
+}
+
 function succeeding_request(options, cb) {
 	return cb(null, {}, "foo")
 }
@@ -76,8 +80,9 @@ describe("RequestSet", function () {
 
 		it("calls the callback with a 'no nodes' error when there's no nodes to service the request", function (done) {
 			var p = {
-				get_node: function () {},
-				nodes: []
+				get_node: function () { return unhealthy },
+				nodes: [],
+				onRetry: function () {}
 			}
 			RequestSet.request(p, {}, function (err, res, body) {
 				assert.equal(err.message, "no nodes")
