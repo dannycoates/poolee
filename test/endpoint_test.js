@@ -10,6 +10,33 @@ var Endpoint = require("../lib/endpoint")(inherits, EventEmitter)
 describe("Endpoint", function () {
 
 	//
+	// unhealthy
+	//
+	//////////////////////////////////////////////////////////////////////////////
+
+	describe("unhealthy", function () {
+
+		it("returns a 'unhealthy' error on request", function () {
+			Endpoint.unhealthy().request({}, function (err) {
+				assert.equal(err.reason, "unhealthy")
+			})
+		})
+	})
+
+	//
+	// overloaded
+	//
+	//////////////////////////////////////////////////////////////////////////////
+
+	describe("overloaded", function () {
+		it("returns a 'full' error on request", function () {
+			Endpoint.overloaded().request({}, function (err) {
+				assert.equal(err.reason, "full")
+			})
+		})
+	})
+
+	//
 	// request
 	//
 	//////////////////////////////////////////////////////////////////////////////
