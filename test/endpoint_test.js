@@ -22,6 +22,10 @@ describe("Endpoint", function () {
 				assert.equal(err.reason, "unhealthy")
 			})
 		})
+
+		it("is not healthy", function () {
+			assert.equal(false, Endpoint.unhealthy().healthy)
+		})
 	})
 
 	//
@@ -34,6 +38,10 @@ describe("Endpoint", function () {
 			Endpoint.overloaded().request({}, function (err) {
 				assert.equal(err.reason, "full")
 			})
+		})
+
+		it("is not healthy", function () {
+			assert.equal(false, Endpoint.overloaded().healthy)
 		})
 	})
 
