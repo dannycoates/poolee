@@ -52,14 +52,14 @@ the pool may retry the request on other endpoints until it succeeds or reaches
 ### Usage
 
 
-The first argument may be a url path
+The first argument may be a url path.
 If the callback has 3 arguments the full response body will be returned
 
 ```javascript
 pool.request('/users/me', function (error, response, body) {})
 ```
 
-The first argument may be an options object
+The first argument may be an options object.
 Here's the default values:
 
 ```javascript
@@ -97,3 +97,23 @@ pool.request('/foo', function (error, response) {
   response.pipe(somewhere)
 })
 ```
+
+## get
+
+Just a synonym for `request`
+
+## put
+
+Same arguments as `request` that sets `options.method = 'PUT'`. Nice for putting :)
+
+```javascript
+pool.put('/tweet/me', 'Hello World!', function (error, response) {})
+```
+
+## post
+
+Same arguments as `request` that sets `options.method = 'POST'`
+
+## del
+
+Same arguments as `request` that sets `options.method = 'DELETE'`
