@@ -72,17 +72,17 @@ var pool = new Pool(
 )
 ```
 
-#### maxPending
+###### maxPending
 
 Once this threshold is reached, requests will return an error to the callback as a
 signal to slow down the rate of requests.
 
-#### resolution
+###### resolution
 
 Pending requests have their timeouts checked at this rate. If your timeout is 60000
 and resolution is 1000, the request will timeout no later than 60999
 
-#### retryFilter
+###### retryFilter
 
 All valid http responses aren't necessarily a "success". This function lets you
 check the response before calling the request callback. Returning a "truthy" value
@@ -102,7 +102,7 @@ options.retryFilter = function (
 If the returned value is `true` the next attempt will be delayed using exponential backoff;
 if its `Number` it will delay the next attempt by that many ms (useful for `Retry-After` headers)
 
-#### retryDelay
+###### retryDelay
 
 Pool uses exponential backoff when retrying requests. This value is a scaling factor of the
 time (ms) to wait. Here's how it works:
@@ -111,7 +111,7 @@ Math.random() * Math.pow(2, attemptNumber) * retryDelay
 ```
 If `retryDelay` is 20, attemptNumber 1 (the first retry) will delay at most 40ms
 
-#### ping
+###### ping
 
 When an endpoint is unresponsive the pool will not use it for requests. The ping
 url gives a downed endpoint a way to rejoin the pool. If an endpoint is marked unhealthy
@@ -128,7 +128,7 @@ fails, the pool may retry the request on other endpoints until it succeeds or
 reaches `options.attempts` number of tries. *When `data` is a Stream, only 1
 attempt will be made*
 
-#### Usage
+###### Usage
 
 
 The first argument may be a url path.
