@@ -43,6 +43,80 @@ pool.request(
 
 # Pool
 
+## new
+
+```javascript
+var Pool = require('poolee')
+//...
+
+var pool = new Pool(
+  http                     // the http module to use (require('http') or require('https'))
+  ,
+  [ "127.0.0.1:1337"       // array of endpoints in "host:port" form
+  , "127.0.0.1:1338"
+  ]
+  ,                        // options
+  { maxPending: 1000       // maximum number of outstanding request to allow
+  , maxSockets: 200        // max sockets per endpoint Agent
+  , timeout: 60000         // request timeout in ms
+  , resolution: 1000       // timeout check interval (see below)
+  , ping: undefined        // health check url
+  , pingTimeout: 2000      // ping timeout in ms
+  , retryFilter: undefined // see below
+  , retryDelay: 20         // see below
+  , name: undefined        // optional string
+  }
+)
+```
+
+#### maxPending
+
+Once this threshold is reached, requests will return an error to the callback as a
+signal to slow down the rate of requests.
+
+#### resolution
+
+Pending requests have their timeouts checked at this rate. If your timeout is 60000
+and resolution is 1000, the request will timeout no later than 60999
+
+#### retryFilter
+
+All valid http responses aren't necessarily a "success". This function lets you
+check the response before calling the request callback. Returning a "truthy" value
+will retry the request.
+
+For instance, we may want to always retry 500 responses by default:
+```javascript
+options.retryFilter = function (
+    options  // the request.options
+  , response // the http response object
+  , body     // the response body
+  ) {
+  return response.statusCode === 500
+}
+```
+
+If the returned value is `true` the next attempt will be delayed using exponential backoff;
+if its `Number` it will delay the next attempt by that many ms (useful for `Retry-After` headers)
+
+#### retryDelay
+
+Pool uses exponential backoff when retrying requests. This value is a scaling factor of the
+time (ms) to wait. Here's how it works:
+```javascript
+Math.random() * Math.pow(2, attemptNumber) * retryDelay
+```
+If `retryDelay` is 20, attemptNumber 1 (the first retry) will delay at most 20ms
+
+#### ping
+
+When an endpoint is unresponsive the pool will not use it for requests. The ping
+url gives a downed endpoint a way to rejoin the pool. If an endpoint is marked unhealthy
+and a ping url is given, the endpoint will make requests to its ping url until it gets
+a 200 response, based on the `resolution` time.
+
+If the ping url is undefined, the endpoint will never be marked unhealthy.
+
 ## request
 
 An http request. The pool sends the request to one of it's endpoints. If it fails,
@@ -69,7 +143,7 @@ pool.request(
   , data: undefined        // request body, may be a string, buffer, or stream
   , retryFilter: undefined // see below
   , attempts: pool.length  // or at least 2, at most 5
-  , retryDelay: 20         // retries wait with exponetial backoff times this number of ms
+  , retryDelay: 20         // retries wait with exponential backoff times this number of ms
   , timeout: 60000         // ms to wait before timing out the request
   , encoding: 'utf8'       // response body encoding
   , stream: false          // stream instead of buffer response body
