@@ -1,9 +1,8 @@
 # poolee
 
-HTTP pool and load balancer for node. Requests are sent to the healthiest node.
-Exposes node health, timeout, and retry events.
+HTTP pool and load balancer for node.
 
-# Usage
+# Example
 
 ```javascript
 
@@ -41,9 +40,13 @@ pool.request(
 )
 ```
 
-# Pool
+---
 
-## new
+# API
+
+## Pool
+
+### new
 
 ```javascript
 var Pool = require('poolee')
@@ -106,7 +109,7 @@ time (ms) to wait. Here's how it works:
 ```javascript
 Math.random() * Math.pow(2, attemptNumber) * retryDelay
 ```
-If `retryDelay` is 20, attemptNumber 1 (the first retry) will delay at most 20ms
+If `retryDelay` is 20, attemptNumber 1 (the first retry) will delay at most 40ms
 
 #### ping
 
@@ -118,14 +121,14 @@ a 200 response, based on the `resolution` time.
 If the ping url is undefined, the endpoint will never be marked unhealthy.
 
 
-## pool.request
+### pool.request
 
 An http request. The pool sends the request to one of it's endpoints. If it
 fails, the pool may retry the request on other endpoints until it succeeds or
 reaches `options.attempts` number of tries. *When `data` is a Stream, only 1
 attempt will be made*
 
-### Usage
+#### Usage
 
 
 The first argument may be a url path.
@@ -175,11 +178,11 @@ pool.request('/foo', function (error, response) {
 })
 ```
 
-## pool.get
+### pool.get
 
 Just a synonym for `request`
 
-## pool.put
+### pool.put
 
 Same arguments as `request` that sets `options.method = 'PUT'`. Nice for
 putting :)
@@ -188,11 +191,11 @@ putting :)
 pool.put('/tweet/me', 'Hello World!', function (error, response) {})
 ```
 
-## pool.post
+### pool.post
 
 Same arguments as `request` that sets `options.method = 'POST'`
 
-## pool.del
+### pool.del
 
 Same arguments as `request` that sets `options.method = 'DELETE'`
 
@@ -252,13 +255,16 @@ pool.on('timing', function(time, options) {
 ```
 
 
-### Get the healthiest node
+### Get a healthy node
     var node = pool.get_node()
 
 Attached to `node`:
 
-    // numeric composite of latency, # open sockets, # active requests
-    // node.busyness();
+    // Counts of interest
+    // node.pending;
+    // node.successes
+    // node.failures
+    // node.requestRate
 
     // node.ip;
     // node.port;
@@ -268,6 +274,10 @@ Attached to `node`:
 ```js
 node.on('health', function(self) {
   // `self` has all the same properties as `node`
+})
+
+node.on('timeout', function (request) {
+  // the request that timed out
 })
 ```
 
