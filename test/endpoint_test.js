@@ -119,6 +119,7 @@ describe("Endpoint", function () {
 				setTimeout(function () {
 					s.close()
 					assert.equal(error.reason, "socket hang up")
+					assert.equal(/request timed out$/.test(error.message), true)
 					done()
 				}, 40)
 			})
@@ -149,6 +150,7 @@ describe("Endpoint", function () {
 				setTimeout(function () {
 					s.close()
 					assert.equal(error.reason, "aborted")
+					assert.equal(/response timed out$/.test(error.message), true)
 					done()
 				}, 60)
 			})
