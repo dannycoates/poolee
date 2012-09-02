@@ -146,6 +146,7 @@ pool.request(
   { path: undefined        // the request path (required)
   , method: 'GET'
   , data: undefined        // request body, may be a string, buffer, or stream
+  , headers: {}            // extra http headers to send
   , retryFilter: undefined // see below
   , attempts: pool.length  // or at least 2, at most 5
   , retryDelay: 20         // retries wait with exponential backoff times this number of ms
