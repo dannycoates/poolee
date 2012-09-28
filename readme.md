@@ -222,7 +222,7 @@ var pool = new Poolee(http, servers, options)
   // ping path. (default = no ping checks)
 , ping: null
 
-, retryFilter: function (response) {
+, retryFilter: function (options, response) {
     // return true to reject response and retry
   }
 
