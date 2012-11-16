@@ -35,6 +35,7 @@ function aborted_request(options, cb) {
 }
 
 var pool = {
+	options: { maxRetries: 5 },
 	get_node: function () {
 		return node
 	},
@@ -45,17 +46,17 @@ var pool = {
 describe("RequestSet", function () {
 
 	it("defaults attempt count to at least 2", function () {
-		var r = new RequestSet({length: 1}, {}, null)
+		var r = new RequestSet({length: 1, options: { maxRetries: 5 }}, {}, null)
 		assert.equal(r.attempts, 2)
 	})
 
-	it("defaults attempt count to at most 5", function () {
-		var r = new RequestSet({length: 9}, {}, null)
+	it("defaults attempt count to at most maxRetries + 1", function () {
+		var r = new RequestSet({length: 9, options: { maxRetries: 4 }}, {}, null)
 		assert.equal(r.attempts, 5)
 	})
 
 	it("defaults attempt count to pool.length", function () {
-		var r = new RequestSet({length: 4}, {}, null)
+		var r = new RequestSet({length: 4, options: { maxRetries: 5 }}, {}, null)
 		assert.equal(r.attempts, 4)
 	})
 
@@ -80,6 +81,7 @@ describe("RequestSet", function () {
 
 		it("calls the callback with a 'no nodes' error when there's no nodes to service the request", function (done) {
 			var p = {
+				options: { maxRetries: 5 },
 				get_node: function () { return unhealthy },
 				length: 0,
 				onRetry: function () {}
@@ -93,6 +95,7 @@ describe("RequestSet", function () {
 		it("retries hangups once", function (done) {
 			var p = {
 				i: 0,
+				options: { maxRetries: 5 },
 				get_node: function () { return this.nodes[this.i++]},
 				onRetry: function () {},
 				length: 2,
@@ -108,6 +111,7 @@ describe("RequestSet", function () {
 		it("retries hangups once then fails", function (done) {
 			var p = {
 				i: 0,
+				options: { maxRetries: 5 },
 				get_node: function () { return this.nodes[this.i++]},
 				onRetry: function () {},
 				length: 3,
@@ -122,6 +126,7 @@ describe("RequestSet", function () {
 		it("retries aborts once", function (done) {
 			var p = {
 				i: 0,
+				options: { maxRetries: 5 },
 				get_node: function () { return this.nodes[this.i++]},
 				onRetry: function () {},
 				length: 2,
@@ -137,6 +142,7 @@ describe("RequestSet", function () {
 		it("retries aborts once then fails", function (done) {
 			var p = {
 				i: 0,
+				options: { maxRetries: 5 },
 				get_node: function () { return this.nodes[this.i++]},
 				onRetry: function () {},
 				length: 3,
@@ -151,6 +157,7 @@ describe("RequestSet", function () {
 		it("retries up to this.attempts times", function (done) {
 			var p = {
 				i: 0,
+				options: { maxRetries: 5 },
 				get_node: function () { return this.nodes[this.i++]},
 				onRetry: function () {},
 				length: 3,
@@ -165,6 +172,7 @@ describe("RequestSet", function () {
 		it("retries up to the first success", function (done) {
 			var p = {
 				i: 0,
+				options: { maxRetries: 5 },
 				get_node: function () { return this.nodes[this.i++]},
 				onRetry: function () {},
 				length: 4,
