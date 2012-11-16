@@ -63,10 +63,12 @@ var pool = new Pool(
   , maxSockets: 200        // max sockets per endpoint Agent
   , timeout: 60000         // request timeout in ms
   , resolution: 1000       // timeout check interval (see below)
+  , keepAlive: false       // use an alternate Agent that does http keep-alive properly
   , ping: undefined        // health check url
   , pingTimeout: 2000      // ping timeout in ms
   , retryFilter: undefined // see below
   , retryDelay: 20         // see below
+  , maxRetries: 5          // see below
   , name: undefined        // optional string
   }
 )
@@ -81,6 +83,11 @@ signal to slow down the rate of requests.
 
 Pending requests have their timeouts checked at this rate. If your timeout is 60000
 and resolution is 1000, the request will timeout no later than 60999
+
+###### keepAlive
+
+The default http Agent does keep-alive in a stupid way. If you want it to work
+how you'd expect it to set this to true.
 
 ###### retryFilter
 
@@ -110,6 +117,11 @@ time (ms) to wait. Here's how it works:
 Math.random() * Math.pow(2, attemptNumber) * retryDelay
 ```
 If `retryDelay` is 20, attemptNumber 1 (the first retry) will delay at most 40ms
+
+###### maxRetries
+
+The maximum number of attempts to make after the first request fails. This only
+takes effect if maxRetries < pool size.
 
 ###### ping
 
@@ -148,7 +160,7 @@ pool.request(
   , data: undefined        // request body, may be a string, buffer, or stream
   , headers: {}            // extra http headers to send
   , retryFilter: undefined // see below
-  , attempts: pool.length  // or at least 2, at most 5
+  , attempts: pool.length  // or at least 2, at most options.maxRetries + 1
   , retryDelay: 20         // retries wait with exponential backoff times this number of ms
   , timeout: 60000         // ms to wait before timing out the request
   , encoding: 'utf8'       // response body encoding
@@ -200,171 +212,21 @@ Same arguments as `request` that sets `options.method = 'POST'`
 
 Same arguments as `request` that sets `options.method = 'DELETE'`
 
----
 
-# Advanced
+### Events
 
-## Make a pool
-```js
-var pool = new Poolee(http, servers, options)
-```
+##### timing
 
-`servers`: array of strings formatted like 'ip:port'
+Emits the request `duration` and `options` after each request
 
-`options`: defaults and explanations below
+##### retrying
 
-```js
-// options
-{
-  // number of pending requests allowed
-  maxPending: 1000
+Emits the `error` of why a request is being retried
 
-  // ping path. (default = no ping checks)
-, ping: null
+##### timeout
 
-, retryFilter: function (options, response) {
-    // return true to reject response and retry
-  }
+Emits the `request` when a request times out
 
-  // number in milliseconds
-, retryDelay: 20
+##### health
 
-  // optional string name
-, name: null
-}
-```
-
-### Events emitted by `pool`:
-```js
-pool.on('health', function(messageString) {
-  // message string of of the form:
-  // "127.0.0.1:8888 health: true"
-  // or
-  // "127.0.0.1:8888 health: false"
-})
-
-pool.on('timeout', function(url) {
-  // where url is a ip+port+path combination for the timed-out request
-})
-
-pool.on('retrying', function(error) { })
-
-pool.on('timing', function(time, options) {
-  // `time`: the time the latest request took to complete
-  // `options`: options used to send the request
-})
-```
-
-
-### Get a healthy node
-    var node = pool.get_node()
-
-Attached to `node`:
-
-    // Counts of interest
-    // node.pending;
-    // node.successes
-    // node.failures
-    // node.requestRate
-
-    // node.ip;
-    // node.port;
-    // node.name = node.ip + ':' + node.port;
-
-### Events emitted by `node`
-```js
-node.on('health', function(self) {
-  // `self` has all the same properties as `node`
-})
-
-node.on('timeout', function (request) {
-  // the request that timed out
-})
-```
-
-### Example
-
-Note that this example should fail, because there won't be any nodes running.
-You can also see this code in
-[`examples/`](https://github.com/dannycoates/poolee/tree/master/examples).
-
-#### `client.js`
-```js
-var Poolee = require('../')
-  , http = require('http')
-  , ms = require('ms') // converts a time to milliseconds
-  , servers = [ '127.0.0.1:8080', '127.0.0.1:8081', '127.0.0.1:8082' ]
-  , pool = null
-
-  // healthiest node, populated later on
-  , active_node = null
-
-pool = new Poolee(http, servers)
-
-pool.on('retrying', function(error) {
-  console.log(error.message);
-})
-
-console.log('fib(40) = ...calculating on worker.js...');
-pool.request(
-  { method: 'GET'
-  , path: '/'
-  }
-, function (error, response, body) {
-    if (error) {
-      console.error(error.message)
-      return
-    }
-    if (response.statusCode === 200) {
-      console.log(body)
-
-    } else {
-      console.log(response.statusCode)
-      console.log(body)
-    }
-  }
-)
-```
-
-Run this before the above script, then see what happens.
-
-#### `worker.js`
-```js
-// An http server that does things for you!
-// Do not write your fib server this way, instead use
-// https://gist.github.com/2018811 which this code is based on.
-var http = require('http')
-var PORT = process.argv[2]
-
-function fib(n) {
-  if (n < 2) {
-    return 1
-  } else {
-    return fib(n - 2) + fib(n - 1)
-  }
-}
-
-var server = http.createServer(function(req, res) {
-  res.writeHead(200)
-  res.end(fib(40) + "\n")
-})
-server.listen(PORT)
-console.log("worker.js online at http://localhost:" + PORT)
-```
-
-To see a pool that is 100% healthy:
-
-```sh
-node ./worker.js 8080 &
-node ./worker.js 8081 &
-node ./worker.js 8082 &
-
-echo "running client.js ..."
-node ./client.js
-```
-
-## Running tests
-```sh
-npm -g install mocha
-mocha
-```
+Emits the `endpoint` when a node changes state between healthy/unhealthy
