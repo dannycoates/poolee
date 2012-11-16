@@ -63,6 +63,7 @@ var pool = new Pool(
   , maxSockets: 200        // max sockets per endpoint Agent
   , timeout: 60000         // request timeout in ms
   , resolution: 1000       // timeout check interval (see below)
+  , keepAlive: false       // use an alternate Agent that does http keep-alive properly
   , ping: undefined        // health check url
   , pingTimeout: 2000      // ping timeout in ms
   , retryFilter: undefined // see below
@@ -82,6 +83,11 @@ signal to slow down the rate of requests.
 
 Pending requests have their timeouts checked at this rate. If your timeout is 60000
 and resolution is 1000, the request will timeout no later than 60999
+
+###### keepAlive
+
+The default http Agent does keep-alive in a stupid way. If you want it to work
+how you'd expect it to set this to true.
 
 ###### retryFilter
 
@@ -154,7 +160,7 @@ pool.request(
   , data: undefined        // request body, may be a string, buffer, or stream
   , headers: {}            // extra http headers to send
   , retryFilter: undefined // see below
-  , attempts: pool.length  // or at least 2, at most 5
+  , attempts: pool.length  // or at least 2, at most options.maxRetries + 1
   , retryDelay: 20         // retries wait with exponential backoff times this number of ms
   , timeout: 60000         // ms to wait before timing out the request
   , encoding: 'utf8'       // response body encoding
@@ -205,6 +211,7 @@ Same arguments as `request` that sets `options.method = 'POST'`
 ### pool.del
 
 Same arguments as `request` that sets `options.method = 'DELETE'`
+
 
 ### Events
 
