@@ -6,7 +6,8 @@ var Stream = require('stream')
 
 var noop = function () {}
 
-var Endpoint = require("../lib/endpoint")(inherits, EventEmitter)
+var Pinger = require('../lib/pinger')(inherits, EventEmitter)
+var Endpoint = require("../lib/endpoint")(inherits, EventEmitter, Pinger)
 
 describe("Endpoint", function () {
 
@@ -333,9 +334,9 @@ describe("Endpoint", function () {
 
 		it("maintains the correct pending count when requestCount 'overflows'", function () {
 			var e = new Endpoint(http, '127.0.0.1', 6969)
-			e.successes = (Math.pow(2, 31) / 2) - 250
-			e.failures = (Math.pow(2, 31) / 2) - 250
-			e.requestCount = Math.pow(2, 31)
+			e.successes = (Math.pow(2, 52) / 2) - 250
+			e.failures = (Math.pow(2, 52) / 2) - 250
+			e.requestCount = Math.pow(2, 52)
 			e.setPending()
 			assert.equal(e.pending, 500)
 			assert.equal(e.requestCount, 500)
@@ -345,7 +346,7 @@ describe("Endpoint", function () {
 			var e = new Endpoint(http, '127.0.0.1', 6969)
 			e.pending = 500
 			e.requestRate = 500
-			e.requestCount = Math.pow(2, 31)
+			e.requestCount = Math.pow(2, 52)
 			e.requestsLastCheck = e.requestCount - 500
 			e.resetCounters()
 			assert.equal(e.requestCount - e.requestsLastCheck, e.requestRate)
@@ -359,14 +360,14 @@ describe("Endpoint", function () {
 
 	describe("setHealthy()", function () {
 
-		it("calls ping if transitioning from healthy to unhealthy", function (done) {
-			var e = new Endpoint(http, '127.0.0.1', 6969)
-			e.ping = done
+		it("calls pinger.start if transitioning from healthy to unhealthy", function (done) {
+			var e = new Endpoint(http, '127.0.0.1', 6969, {ping: '/ping'})
+			e.pinger.start = done
 			e.setHealthy(false)
 		})
 
 		it("emits 'health' once when changing state from healthy to unhealthy", function (done) {
-			var e = new Endpoint(http, '127.0.0.1', 6969)
+			var e = new Endpoint(http, '127.0.0.1', 6969, {ping: '/ping'})
 			e.emit = function (name) {
 				assert.equal(name, "health")
 				done()
@@ -375,7 +376,7 @@ describe("Endpoint", function () {
 		})
 
 		it("emits 'health' once when changing state from unhealthy to healthy", function (done) {
-			var e = new Endpoint(http, '127.0.0.1', 6969)
+			var e = new Endpoint(http, '127.0.0.1', 6969, {ping: '/ping'})
 			e.emit = function (name) {
 				assert.equal(name, "health")
 				done()
