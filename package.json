@@ -1,6 +1,6 @@
 {
     "name": "poolee",
-    "version": "0.4.0",
+    "version": "0.4.1",
     "description": "HTTP pool and load balancer",
     "homepage": "http://github.com/dannycoates/poolee",
     "author": "Danny Coates <dannycoates@gmail.com>",
@@ -14,8 +14,6 @@
       "agentkeepalive": "*"
     },
     "devDependencies": {
-      "mocha": "*",
-      "optimist": "*",
-      "async": "*"
+      "mocha": "*"
     }
 }
