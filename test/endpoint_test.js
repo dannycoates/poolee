@@ -335,7 +335,8 @@ describe("Endpoint", function () {
 		it("maintains the correct pending count when requestCount 'overflows'", function () {
 			var e = new Endpoint(http, '127.0.0.1', 6969)
 			e.successes = (Math.pow(2, 52) / 2) - 250
-			e.failures = (Math.pow(2, 52) / 2) - 250
+			e.failures = (Math.pow(2, 52) / 2) - 251
+			e.filtered = 1
 			e.requestCount = Math.pow(2, 52)
 			e.setPending()
 			assert.equal(e.pending, 500)
@@ -350,6 +351,43 @@ describe("Endpoint", function () {
 			e.requestsLastCheck = e.requestCount - 500
 			e.resetCounters()
 			assert.equal(e.requestCount - e.requestsLastCheck, e.requestRate)
+		})
+	})
+
+	//
+	// resetCounters
+	//
+	//////////////////////////////////////////////////////////////////////////////
+
+	describe("resetCounters()", function () {
+
+		it("sets successes, failures and filtered to 0", function () {
+			var e = new Endpoint(http, '127.0.0.1', 6969)
+			e.successes = (Math.pow(2, 52) / 2) - 250
+			e.failures = (Math.pow(2, 52) / 2) - 251
+			e.filtered = 1
+			e.requestCount = Math.pow(2, 52)
+			e.resetCounters()
+			assert.equal(e.successes, 0)
+			assert.equal(e.failures, 0)
+			assert.equal(e.filtered, 0)
+		})
+
+		it("sets requestCount = pending", function () {
+			var e = new Endpoint(http, '127.0.0.1', 6969)
+			e.pending = 500
+			e.requestRate = 400
+			e.requestCount = Math.pow(2, 52)
+			e.resetCounters()
+			assert.equal(e.requestCount, 500)
+		})
+
+		it("sets requestsLastCheck = requestRate - pending", function () {
+			var e = new Endpoint(http, '127.0.0.1', 6969)
+			e.pending = 500
+			e.requestRate = 600
+			e.resetCounters()
+			assert.equal(e.requestsLastCheck, 100)
 		})
 	})
 
