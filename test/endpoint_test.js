@@ -176,7 +176,33 @@ describe("Endpoint", function () {
 					s.close()
 					assert.equal(fin, true)
 					done()
-				}, 50)
+				}, 60)
+			})
+			s.listen(6969)
+		})
+
+		it("removes the request from this.requests on timeout", function (done) {
+			var s = http.createServer(function (req, res) {
+				setTimeout(function () {
+					res.end("foo")
+				}, 30)
+			})
+			s.on('listening', function () {
+				var e = new Endpoint(http, '127.0.0.1', 6969, {keepAlive: true, timeout: 20, resolution: 10})
+				var fin = false
+				e.on('timeout', function () {
+					fin = true
+				})
+				e.request({path:'/foo', method: 'GET'}, noop)
+				e.request({path:'/foo', method: 'GET'}, noop)
+				e.request({path:'/foo', method: 'GET'}, noop)
+
+				setTimeout(function () {
+					assert.equal(fin, true)
+					assert.equal(Object.keys(e.requests).length, 0)
+					s.close()
+					done()
+				}, 100)
 			})
 			s.listen(6969)
 		})
