@@ -21,7 +21,11 @@ function FakeRequestSet() {}
 FakeRequestSet.request = function () {}
 
 function succeeding_request(pool, options, cb) {
-	return cb(null, {}, "foo")
+	return cb(null, { socket: { _requestCount: 2 }}, "foo")
+}
+
+function succeeding_request_not_reused(pool, options, cb) {
+	return cb(null, { socket: {}}, "foo")
 }
 
 function failing_request(pool, options, cb) {
@@ -145,6 +149,26 @@ describe('Pool', function () {
 			pool.request({}, null, noop)
 		})
 
+		it("sets the reused field of options to true when the socket is reused", function (done) {
+			FakeRequestSet.request = succeeding_request
+			pool.on('timing', function (interval, options) {
+				assert(options.reused)
+				done()
+			})
+
+			pool.request({}, null, noop)
+		})
+
+		it("sets the reused field of options to false when the socket isn't reused", function (done) {
+			FakeRequestSet.request = succeeding_request_not_reused
+			pool.on('timing', function (interval, options) {
+				assert(!options.reused)
+				done()
+			})
+
+			pool.request({}, null, noop)
+		})
+
 		it("allows the data parameter to be optional", function (done) {
 			FakeRequestSet.request = succeeding_request
 			pool.request({}, function (e, r, b) {
@@ -156,7 +180,7 @@ describe('Pool', function () {
 		it("allows the options parameter to be a path string", function (done) {
 			FakeRequestSet.request = function (pool, options, cb) {
 				assert.equal(options.path, "/foo")
-				return cb(null, {}, "foo")
+				return cb(null, {socket:{}}, "foo")
 			}
 			pool.request("/foo", function (e, r, b) {
 				assert.equal(b, "foo")
@@ -167,7 +191,7 @@ describe('Pool', function () {
 		it("defaults method to GET", function (done) {
 			FakeRequestSet.request = function (pool, options, cb) {
 				assert.equal(options.method, "GET")
-				return cb(null, {}, "foo")
+				return cb(null, {socket:{}}, "foo")
 			}
 			pool.request("/foo", function (e, r, b) {
 				assert.equal(b, "foo")
@@ -178,7 +202,7 @@ describe('Pool', function () {
 		it("defaults options.stream to true when callback.length is 2", function (done) {
 			FakeRequestSet.request = function (pool, options, cb) {
 				assert.equal(options.stream, true)
-				return cb(null, {})
+				return cb(null, {socket:{}})
 			}
 			pool.request("/foo", function (e, r) {
 				done()
@@ -188,7 +212,7 @@ describe('Pool', function () {
 		it("defaults options.stream to false when callback.length is 3", function (done) {
 			FakeRequestSet.request = function (pool, options, cb) {
 				assert.equal(options.stream, false)
-				return cb(null, {})
+				return cb(null, {socket:{}})
 			}
 			pool.request("/foo", function (e, r, b) {
 				done()
@@ -218,7 +242,7 @@ describe('Pool', function () {
 		it("sets the options.method to PUT", function (done) {
 			FakeRequestSet.request = function (pool, options, cb) {
 				assert.equal(options.method, "PUT")
-				return cb(null, {}, "foo")
+				return cb(null, {socket:{}}, "foo")
 			}
 			pool.put("/foo", "bar", function (e, r, b) {
 				assert.equal(b, "foo")
@@ -237,7 +261,7 @@ describe('Pool', function () {
 		it("sets the options.method to POST", function (done) {
 			FakeRequestSet.request = function (pool, options, cb) {
 				assert.equal(options.method, "POST")
-				return cb(null, {}, "foo")
+				return cb(null, {socket:{}}, "foo")
 			}
 			pool.post("/foo", "bar", function (e, r, b) {
 				assert.equal(b, "foo")
@@ -256,7 +280,7 @@ describe('Pool', function () {
 		it("sets the options.method to DELETE", function (done) {
 			FakeRequestSet.request = function (pool, options, cb) {
 				assert.equal(options.method, "DELETE")
-				return cb(null, {}, "foo")
+				return cb(null, {socket:{}}, "foo")
 			}
 			pool.del("/foo", function (e, r, b) {
 				assert.equal(b, "foo")
