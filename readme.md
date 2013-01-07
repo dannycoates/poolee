@@ -70,6 +70,7 @@ var pool = new Pool(
   , retryDelay: 20         // see below
   , maxRetries: 5          // see below
   , name: undefined        // optional string
+  , agentOptions: undefined// an object for passing options directly to the Http Agent
   }
 )
 ```
@@ -122,6 +123,11 @@ If `retryDelay` is 20, attemptNumber 1 (the first retry) will delay at most 40ms
 
 The maximum number of attempts to make after the first request fails. This only
 takes effect if maxRetries < pool size.
+
+###### agentOptions
+
+These options are passed directly to the underlying Agents used in the pool. This
+is nice for passing options like `cert` and `key` that are required for client certificates.
 
 ###### ping
 

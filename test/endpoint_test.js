@@ -2,6 +2,7 @@ var assert = require("assert")
 var EventEmitter = require("events").EventEmitter
 var inherits = require('util').inherits
 var http = require('http')
+var https = require('https')
 var Stream = require('stream')
 
 var noop = function () {}
@@ -10,6 +11,29 @@ var Pinger = require('../lib/pinger')(inherits, EventEmitter)
 var Endpoint = require("../lib/endpoint")(inherits, EventEmitter, Pinger)
 
 describe("Endpoint", function () {
+
+	it("passes nothing to the Agent constructor when no agentOptions are given", function () {
+		var e = new Endpoint(http, '127.0.0.1', 6969, { bogus: true })
+		assert.equal(e.agent.options.bogus, undefined)
+	})
+
+	it("passes agentOptions to the underlying Agent (no keep-alive)", function () {
+		var e = new Endpoint(http, '127.0.0.1', 6969, { agentOptions: { cert: 'foo', key: 'bar'}})
+		assert.equal(e.agent.options.cert, 'foo')
+		assert.equal(e.agent.options.key, 'bar')
+	})
+
+	it("passes agentOptions to the underlying Agent (keep-alive)", function () {
+		var e = new Endpoint(http, '127.0.0.1', 6969, {keepAlive: true, agentOptions: { cert: 'foo', key: 'bar'}})
+		assert.equal(e.agent.options.cert, 'foo')
+		assert.equal(e.agent.options.key, 'bar')
+	})
+
+	it("passes agentOptions to the underlying Agent (keep-alive secure)", function () {
+		var e = new Endpoint(https, '127.0.0.1', 6969, {keepAlive: true, agentOptions: { cert: 'foo', key: 'bar'}})
+		assert.equal(e.agent.options.cert, 'foo')
+		assert.equal(e.agent.options.key, 'bar')
+	})
 
 	//
 	// unhealthy
