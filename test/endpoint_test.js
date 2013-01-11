@@ -442,6 +442,48 @@ describe("Endpoint", function () {
 	})
 
 	//
+	// ready
+	//
+	//////////////////////////////////////////////////////////////////////////////
+
+	describe("ready()", function () {
+
+		it('returns true when it is healthy and connected > pending with keepAlive on',
+			function () {
+				var e = new Endpoint(http, '127.0.0.1', 6969, {keepAlive: true})
+				e.pending = 1
+				e.agent.sockets[e.name] = [1,2]
+				assert(e.ready())
+			}
+		)
+
+		it('returns false when it is healthy and connected = pending with keepAlive on',
+			function () {
+				var e = new Endpoint(http, '127.0.0.1', 6969, {keepAlive: true})
+				e.pending = 1
+				e.agent.sockets[e.name] = [1]
+				assert(!e.ready())
+			}
+		)
+
+		it('returns true when it is healthy and pending = 0 with keepAlive off',
+			function () {
+				var e = new Endpoint(http, '127.0.0.1', 6969)
+				e.pending = 0
+				assert(e.ready())
+			}
+		)
+
+		it('returns false when it is healthy and pending > 0 with keepAlive off',
+			function () {
+				var e = new Endpoint(http, '127.0.0.1', 6969)
+				e.pending = 1
+				assert(!e.ready())
+			}
+		)
+	})
+
+	//
 	// setHealthy
 	//
 	//////////////////////////////////////////////////////////////////////////////

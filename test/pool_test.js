@@ -11,7 +11,10 @@ var http = {
 
 function FakeEndpoint() {}
 inherits(FakeEndpoint, EventEmitter)
+FakeEndpoint.prototype.pending = 1
 FakeEndpoint.prototype.busyness = function () { return 1 }
+FakeEndpoint.prototype.connected = function () { return 0 }
+FakeEndpoint.prototype.ready = function () { return false }
 var overloaded = new FakeEndpoint()
 FakeEndpoint.overloaded = function () { return overloaded }
 var unhealthy = new FakeEndpoint()
@@ -105,6 +108,21 @@ describe('Pool', function () {
 			var p = new Pool(http, ['127.0.0.1:8080', '127.0.0.1:8081', '127.0.0.1:8082'])
 			p.nodes.forEach(function (n) { n.healthy = false })
 			assert.equal(p.get_node(), unhealthy)
+		})
+
+		it('returns a "ready" node when one is available', function () {
+			var p = new Pool(http, ['127.0.0.1:8080', '127.0.0.1:8081', '127.0.0.1:8082'])
+			var n = p.nodes[0]
+			n.ready = function () { return true }
+			assert.equal(p.get_node(), n);
+		})
+
+		it('returns a healthy node when none are "ready"', function () {
+			var p = new Pool(http, ['127.0.0.1:8080', '127.0.0.1:8081', '127.0.0.1:8082'])
+			p.nodes[0].healthy = false
+			p.nodes[1].healthy = false
+			p.nodes[2].healthy = true
+			assert(p.get_node().healthy);
 		})
 	})
 
