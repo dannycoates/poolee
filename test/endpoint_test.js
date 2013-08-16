@@ -8,7 +8,8 @@ var Stream = require('stream')
 var noop = function () {}
 
 var Pinger = require('../lib/pinger')(inherits, EventEmitter)
-var Endpoint = require("../lib/endpoint")(inherits, EventEmitter, Pinger)
+var EndpointError = require('../lib/error')(inherits)
+var Endpoint = require("../lib/endpoint")(inherits, EventEmitter, Pinger, EndpointError)
 
 describe("Endpoint", function () {
 
@@ -177,7 +178,7 @@ describe("Endpoint", function () {
 					assert.equal(error.reason, "aborted")
 					assert.equal(/response timed out$/.test(error.message), true)
 					done()
-				}, 60)
+				}, 250)
 			})
 			s.listen(6969)
 		})
