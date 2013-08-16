@@ -2,6 +2,8 @@
 
 HTTP pool and load balancer for node.
 
+[![Build Status](https://travis-ci.org/dannycoates/poolee.png)](https://travis-ci.org/dannycoates/poolee)
+
 # Example
 
 ```javascript
