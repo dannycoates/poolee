@@ -9,7 +9,9 @@ var http = {
 	Agent: noop
 }
 
-function FakeEndpoint() {}
+function FakeEndpoint(protocol, ip, port, options) {
+    this.name = ip + ":" + port;
+}
 inherits(FakeEndpoint, EventEmitter)
 FakeEndpoint.prototype.pending = 1
 FakeEndpoint.prototype.busyness = function () { return 1 }
@@ -74,6 +76,22 @@ describe('Pool', function () {
 	it("sets this.length to this.nodes.length", function () {
 		var p = new Pool(http, ['127.0.0.1:8080', '127.0.0.1:8081', '127.0.0.1:8082'])
 		assert.equal(p.length, 3)
+	})
+
+	//
+	// Node addition and removal
+	//
+	//////////////////////////////////////////////////////////////////////////////
+	it("allows the addition of new nodes", function () {
+		var p = new Pool(http, ['127.0.0.1:8080', '127.0.0.1:8081', '127.0.0.1:8082'])
+		p.addNode("127.0.0.1:8083")
+		assert.equal(p.length, 4)
+	})
+
+	it("allows the removal of nodes", function () {
+		var p = new Pool(http, ['127.0.0.1:8080', '127.0.0.1:8081', '127.0.0.1:8082'])
+		p.removeNode("127.0.0.1:8081")
+		assert.equal(p.length, 2)
 	})
 
 	//
