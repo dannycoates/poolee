@@ -220,6 +220,24 @@ Same arguments as `request` that sets `options.method = 'POST'`
 
 Same arguments as `request` that sets `options.method = 'DELETE'`
 
+### pool.addNode
+
+Adds a node to the pool given its hostname as a string. The node
+will start in the healthy state.
+
+```javascript
+pool.addNode("127.0.0.1:8890");
+```
+
+### pool.removeNode
+
+Removes a node to the pool given its hostname as a string. Note
+that in the case of hosts with duplicate names, all instances of the
+specified name will be removed from the pool.
+
+```javascript
+pool.removeNode("127.0.0.1:8890");
+```
 
 ### Events
 
