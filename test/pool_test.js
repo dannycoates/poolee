@@ -10,7 +10,7 @@ var http = {
 }
 
 function FakeEndpoint(protocol, ip, port, options) {
-    this.name = ip + ":" + port;
+    this.name = ip + ":" + port
 }
 inherits(FakeEndpoint, EventEmitter)
 FakeEndpoint.prototype.pending = 1
