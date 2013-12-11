@@ -108,14 +108,14 @@ describe("RequestSet", function () {
 			})
 		})
 
-		it("retries hangups once then fails", function (done) {
+		it("retries hangups identically to other requests then fails", function (done) {
 			var p = {
 				i: 0,
 				options: { maxRetries: 5 },
 				get_node: function () { return this.nodes[this.i++]},
 				onRetry: function () {},
 				length: 3,
-				nodes: [{ request: hangup_request }, { request: hangup_request }, { request: succeeding_request }]
+				nodes: [{ request: hangup_request }, { request: hangup_request }, { request: hangup_request }, { request: hangup_request }, { request: hangup_request }, { request: succeeding_request }]
 			}
 			RequestSet.request(p, {}, function (err, res, body) {
 				assert.equal(err.reason, "socket hang up")
@@ -139,14 +139,14 @@ describe("RequestSet", function () {
 			})
 		})
 
-		it("retries aborts once then fails", function (done) {
+		it("retries aborts identically to other requests then fails", function (done) {
 			var p = {
 				i: 0,
 				options: { maxRetries: 5 },
 				get_node: function () { return this.nodes[this.i++]},
 				onRetry: function () {},
 				length: 3,
-				nodes: [{ request: aborted_request }, { request: aborted_request }, { request: succeeding_request }]
+				nodes: [{ request: aborted_request }, { request: aborted_request }, { request: aborted_request }, { request: aborted_request}, { request: aborted_request}, { request: aborted_request} ]
 			}
 			RequestSet.request(p, {}, function (err, res, body) {
 				assert.equal(err.reason, "aborted")
