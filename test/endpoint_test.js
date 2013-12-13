@@ -295,7 +295,6 @@ describe("Endpoint", function () {
 
 				setTimeout(function () {
 					s.close()
-                    console.log(error);
 					assert.equal(error, null)
 					assert.equal(Object.keys(e.requests).length, 0)
 					done()
