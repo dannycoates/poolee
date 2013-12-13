@@ -115,7 +115,9 @@ describe("RequestSet", function () {
 				get_node: function () { return this.nodes[this.i++]},
 				onRetry: function () {},
 				length: 3,
-				nodes: [{ name: "fail_node", request: hangup_request }, {name: "fail_node2", request: failing_request}, { name: "succeed_node", request: succeeding_request }]
+				nodes: [{ name: "fail_node", request: hangup_request }, 
+                        {name: "fail_node2", request: failing_request}, 
+                        { name: "succeed_node", request: succeeding_request }]
 			}
 			RequestSet.request(p, {}, function (err, res, body, requestInfo) {
 				assert.equal(err, null)
