@@ -62,7 +62,7 @@ var pool = new Pool(
   ]
   ,                        // options
   { maxPending: 1000       // maximum number of outstanding request to allow
-  , maxSockets: 20        // max sockets per endpoint Agent
+  , maxSockets: 20         // max sockets per endpoint Agent
   , timeout: 60000         // request timeout in ms
   , resolution: 1000       // timeout check interval (see below)
   , keepAlive: false       // use an alternate Agent that does http keep-alive properly
@@ -110,7 +110,7 @@ options.retryFilter = function (
 ```
 
 If the returned value is `true` the next attempt will be delayed using exponential backoff;
-if its `Number` it will delay the next attempt by that many ms (useful for `Retry-After` headers)
+if its a `Number` it will delay the next attempt by that many ms (useful for `Retry-After` headers)
 
 ###### retryDelay
 
