@@ -17,6 +17,6 @@
       "test": "mocha -R spec -t 6000 test/*_test.js"
     },
     "devDependencies": {
-      "mocha": "*"
+      "mocha": "2.5.3"
     }
 }
