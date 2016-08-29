@@ -1,6 +1,6 @@
 {
     "name": "poolee",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "HTTP pool and load balancer",
     "homepage": "http://github.com/dannycoates/poolee",
     "author": "Danny Coates <dannycoates@gmail.com>",
