@@ -108,6 +108,26 @@ describe("RequestSet", function () {
 			})
 		})
 
+        it("passes back a requestInfo containing information about the request", function(done) {
+			var p = {
+				i: 0,
+				options: { maxRetries: 5 },
+				get_node: function () { return this.nodes[this.i++]},
+				onRetry: function () {},
+				length: 3,
+				nodes: [{ name: "fail_node", request: hangup_request }, {name: "fail_node2", request: failing_request}, { name: "succeed_node", request: succeeding_request }]
+			}
+			RequestSet.request(p, {}, function (err, res, body, requestInfo) {
+				assert.equal(err, null)
+				assert.equal(body, "foo")
+                assert(requestInfo, "requestInfo should be non-null");
+                assert.deepEqual(requestInfo.failedNodes, ['fail_node', 'fail_node2']);
+                assert.deepEqual(requestInfo.respondingNode, 'succeed_node');
+                assert.equal(requestInfo.numRetries, 3);
+				done()
+			})
+        });
+
 		it("retries hangups identically to other requests then fails", function (done) {
 			var p = {
 				i: 0,

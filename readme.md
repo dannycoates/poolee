@@ -175,7 +175,7 @@ pool.request(
   , stream: false          // stream instead of buffer response body
   }
   ,
-  function (error, response, body) {}
+  function (error, response, body, requestInfo) {}
 )
 ```
 
@@ -192,6 +192,16 @@ pool.request(
 
 A callback with 2 arguments will stream the response and not buffer the
 response body.
+
+The fourth callback argument, `requestInfo` contains information about how the request was handled by
+the pool, namely:
+
+```javascript
+{ numRetries: 3 // number of times the request was made
+, failedNodes: ['www.foo.com:99', 'www.foo2.com:99'] // nodes that failed to handle the request
+, respondingNode: 'www.foo3.com:99' // The node that handled the request sucesfully
+}
+```
 
 ```javascript
 pool.request('/foo', function (error, response) {
